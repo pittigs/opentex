@@ -10,6 +10,9 @@ import { CollabModal } from './components/modals/CollabModal';
 import { GitModal } from './components/modals/GitModal';
 import { ReviewPanel } from './components/review/ReviewPanel';
 import { AiAssistantPanel } from './components/tools/AiAssistantPanel';
+import { DashboardView } from './components/dashboard/DashboardView';
+import { AccountModal } from './components/dashboard/AccountModal';
+import { NewProjectModal } from './components/dashboard/NewProjectModal';
 import type { 
   ProjectFile, 
   CompilerLogEntry, 
@@ -18,19 +21,44 @@ import type {
   GitConfig,
   GitCommit,
   DocumentComment,
-  TrackChangeSuggestion
+  TrackChangeSuggestion,
+  UserProfile,
+  ProjectSummary
 } from './types';
 import { IEEE_TEMPLATE } from './templates/latexTemplates';
 import { compileLatexProject, exportProjectAsPdf } from './services/compiler';
 import { analyzeLatexCode } from './services/latexParser';
+import {
+  loadProjects,
+  saveProjects,
+  loadUserProfile,
+  saveUserProfile,
+  getActiveProjectId,
+  setActiveProjectId,
+  createProjectFromTemplate,
+  createEmptyProject,
+  duplicateProject,
+  deleteProject,
+  toggleStarProject
+} from './services/projectStorage';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 export const App: React.FC = () => {
+  // 0. Dashboard & Project Management State
+  const [currentView, setCurrentView] = useState<'dashboard' | 'editor'>('dashboard');
+  const [projects, setProjects] = useState<ProjectSummary[]>(() => loadProjects());
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => loadUserProfile());
+  const [activeProjectId, setActiveProjectIdState] = useState<string>(() => getActiveProjectId());
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+
+  const initialProject = projects.find((p) => p.id === activeProjectId) || projects[0];
+
   // 1. Project & File Management State
-  const [projectName, setProjectName] = useState('OpenTeX Hybrid Paper');
-  const [files, setFiles] = useState<ProjectFile[]>(IEEE_TEMPLATE.files);
-  const [activeFileId, setActiveFileId] = useState<string>(IEEE_TEMPLATE.files[0].id);
+  const [projectName, setProjectName] = useState(initialProject ? initialProject.name : 'OpenTeX Hybrid Paper');
+  const [files, setFiles] = useState<ProjectFile[]>(initialProject ? initialProject.files : IEEE_TEMPLATE.files);
+  const [activeFileId, setActiveFileId] = useState<string>(initialProject?.files[0]?.id || IEEE_TEMPLATE.files[0].id);
   const [currentTemplate, setCurrentTemplate] = useState<LaTeXTemplate>(IEEE_TEMPLATE);
 
   // 2. Compilation State
@@ -160,6 +188,78 @@ export const App: React.FC = () => {
 
   // Calculate live statistics
   const { logs: liveLogs, parsed: docStats } = analyzeLatexCode(activeContent);
+
+  // Dashboard & Project Switch Handlers
+  const handleOpenProjectFromDashboard = (projectId: string) => {
+    const target = projects.find((p) => p.id === projectId);
+    if (!target) return;
+    setActiveProjectIdState(projectId);
+    setActiveProjectId(projectId);
+    setProjectName(target.name);
+    setFiles(target.files);
+    setActiveFileId(target.files[0]?.id || 'file-1');
+    setCurrentView('editor');
+  };
+
+  const handleBackToDashboard = () => {
+    // Persist current project files and name
+    const updated = projects.map((p) => {
+      if (p.id === activeProjectId) {
+        return {
+          ...p,
+          name: projectName,
+          files: files,
+          lastModified: 'Gerade eben',
+          updatedAt: Date.now(),
+        };
+      }
+      return p;
+    });
+    setProjects(updated);
+    saveProjects(updated);
+    setCurrentView('dashboard');
+  };
+
+  const handleSaveUserProfile = (updated: UserProfile) => {
+    setUserProfile(updated);
+    saveUserProfile(updated);
+  };
+
+  const handleToggleStar = (projId: string) => {
+    const updated = toggleStarProject(projId);
+    setProjects(updated);
+  };
+
+  const handleDuplicateProject = (projId: string) => {
+    const cloned = duplicateProject(projId);
+    if (cloned) {
+      setProjects(loadProjects());
+    }
+  };
+
+  const handleDeleteProject = (projId: string) => {
+    const updated = deleteProject(projId);
+    setProjects(updated);
+  };
+
+  const handleSelectTemplateDirect = (templateId: string) => {
+    const newProj = createProjectFromTemplate(templateId);
+    setProjects(loadProjects());
+    handleOpenProjectFromDashboard(newProj.id);
+  };
+
+  const handleCreateEmptyProject = (name: string, description?: string) => {
+    return createEmptyProject(name, description);
+  };
+
+  const handleCreateProjectFromTemplate = (templateId: string, customName?: string) => {
+    return createProjectFromTemplate(templateId, customName);
+  };
+
+  const handleProjectCreated = (proj: ProjectSummary) => {
+    setProjects(loadProjects());
+    handleOpenProjectFromDashboard(proj.id);
+  };
 
   // Compilation Handler
   const handleCompile = useCallback(async () => {
@@ -433,6 +533,43 @@ export const App: React.FC = () => {
     setCollaborators((prev) => [...prev, newCollab]);
   };
 
+  // If on Dashboard view, render the Main Screen
+  if (currentView === 'dashboard') {
+    return (
+      <div className={`w-full h-full min-h-screen ${isDarkMode ? 'dark bg-slate-950' : 'bg-slate-50'}`}>
+        <DashboardView
+          projects={projects}
+          userProfile={userProfile}
+          onOpenProject={handleOpenProjectFromDashboard}
+          onNewProjectClick={() => setIsNewProjectModalOpen(true)}
+          onOpenAccountClick={() => setIsAccountModalOpen(true)}
+          onToggleStar={handleToggleStar}
+          onDuplicateProject={handleDuplicateProject}
+          onDeleteProject={handleDeleteProject}
+          onSelectTemplateDirect={handleSelectTemplateDirect}
+          isDarkMode={isDarkMode}
+          toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        />
+
+        <AccountModal
+          isOpen={isAccountModalOpen}
+          onClose={() => setIsAccountModalOpen(false)}
+          profile={userProfile}
+          onSaveProfile={handleSaveUserProfile}
+        />
+
+        <NewProjectModal
+          isOpen={isNewProjectModalOpen}
+          onClose={() => setIsNewProjectModalOpen(false)}
+          onCreateEmpty={handleCreateEmptyProject}
+          onCreateFromTemplate={handleCreateProjectFromTemplate}
+          onProjectCreated={handleProjectCreated}
+        />
+      </div>
+    );
+  }
+
+  // Otherwise, render the LaTeX Workspace / Editor View
   return (
     <div className={`h-screen w-screen flex flex-col ${isDarkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>
       {/* Top Navbar */}
@@ -475,6 +612,9 @@ export const App: React.FC = () => {
           setIsReviewOpen(false);
         }}
         isAiOpen={isAiOpen}
+        onBackToDashboard={handleBackToDashboard}
+        onOpenAccount={() => setIsAccountModalOpen(true)}
+        userProfile={userProfile}
       />
 
       {/* Main Workspace Split Layout */}
@@ -562,6 +702,13 @@ export const App: React.FC = () => {
       />
 
       {/* Modals */}
+      <AccountModal
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+        profile={userProfile}
+        onSaveProfile={handleSaveUserProfile}
+      />
+
       <TemplateModal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}

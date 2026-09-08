@@ -15,9 +15,10 @@ import {
   Cloud,
   GitBranch,
   MessageSquare,
-  Bot
+  Bot,
+  ArrowLeft
 } from 'lucide-react';
-import type { Collaborator, LaTeXTemplate, GitConfig } from '../../types';
+import type { Collaborator, LaTeXTemplate, GitConfig, UserProfile } from '../../types';
 
 interface NavbarProps {
   projectName: string;
@@ -47,6 +48,9 @@ interface NavbarProps {
   unresolvedCommentCount: number;
   onOpenAiAssistant: () => void;
   isAiOpen: boolean;
+  onBackToDashboard?: () => void;
+  onOpenAccount?: () => void;
+  userProfile?: UserProfile;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -74,13 +78,30 @@ export const Navbar: React.FC<NavbarProps> = ({
   isReviewOpen,
   unresolvedCommentCount,
   onOpenAiAssistant,
-  isAiOpen
+  isAiOpen,
+  onBackToDashboard,
+  onOpenAccount,
+  userProfile
 }) => {
   return (
     <header className="h-14 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-3 flex items-center justify-between z-30 select-none">
       {/* Left: Brand & Project Name */}
       <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
+        {onBackToDashboard && (
+          <button
+            onClick={onBackToDashboard}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 text-xs font-semibold transition cursor-pointer group shadow-sm"
+            title="Zurück zum Hauptbildschirm (Dashboard)"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-indigo-400 group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </button>
+        )}
+
+        <div 
+          className={`flex items-center space-x-2 ${onBackToDashboard ? 'cursor-pointer hover:opacity-90 transition' : ''}`}
+          onClick={onBackToDashboard}
+        >
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 via-blue-500 to-cyan-400 flex items-center justify-center shadow-md shadow-indigo-500/20">
             <span className="font-extrabold text-sm text-white tracking-tight">TeX</span>
           </div>
@@ -88,7 +109,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center space-x-1.5">
               <span className="font-bold text-sm tracking-tight text-white">OpenTeX</span>
               <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                Open Source
+                Editor
               </span>
             </div>
           </div>
@@ -311,11 +332,24 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Theme Toggle */}
         <button
           onClick={toggleDarkMode}
-          className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+          className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition cursor-pointer"
           title={isDarkMode ? 'Heller Modus' : 'Dunkler Modus'}
         >
           {isDarkMode ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-slate-400" />}
         </button>
+
+        {/* User Account / Profile Button */}
+        {userProfile && (
+          <button
+            onClick={onOpenAccount}
+            className="flex items-center space-x-1.5 p-1 rounded-xl hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition cursor-pointer ml-1"
+            title={`${userProfile.name} - Benutzerkonto & Einstellungen`}
+          >
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-[10px] text-white shadow">
+              {userProfile.avatar || 'MM'}
+            </div>
+          </button>
+        )}
       </div>
     </header>
   );

@@ -109,3 +109,44 @@ export interface AiProviderConfig {
   model: string;
   endpoint?: string;
 }
+
+// User Profile & Account Types
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: string;
+  affiliation: string;
+  orcid?: string;
+  bio?: string;
+  plan: 'OpenTeX Community' | 'OpenTeX Academic Pro' | 'Campus License';
+  storageUsedMb: number;
+  storageLimitMb: number;
+  gitUsername?: string;
+  gitEmail?: string;
+  gitToken?: string;
+  aiKeys?: {
+    openai?: string;
+    gemini?: string;
+    anthropic?: string;
+    ollamaEndpoint?: string;
+  };
+}
+
+// Project Management & Dashboard Types
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  description: string;
+  category: 'Paper' | 'Thesis' | 'Exam' | 'Slides' | 'General';
+  lastModified: string;
+  updatedAt: number;
+  isStarred: boolean;
+  isArchived: boolean;
+  isShared: boolean;
+  ownerId: string;
+  files: ProjectFile[];
+  collaborators: Collaborator[];
+}
+
