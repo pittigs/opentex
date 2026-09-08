@@ -1,0 +1,158 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{geometry}
+\geometry{a4paper, margin=20mm, top=22mm, bottom=22mm}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+
+% Colors
+\definecolor{rubblue}{RGB}{0, 53, 96}
+\definecolor{darkslate}{RGB}{30, 41, 59}
+\definecolor{lightgrey}{RGB}{248, 250, 252}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textcolor{darkslate}{\small \textbf{Probability for Computer Science}}}
+\lhead{\textcolor{darkslate}{\small Advanced Mock Exam (50 Points)}}
+\rfoot{\textcolor{darkslate}{\small Page \thepage}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+
+\titleformat{\section}{\Large\bfseries\color{rubblue}}{}{0em}{}[\titlerule]
+
+\begin{document}
+
+% -------------------------------------------------------------
+% Header
+% -------------------------------------------------------------
+\begin{center}
+    {\LARGE \textbf{\color{rubblue}Ruhr-Universit\"at Bochum}}\\[3pt]
+    {\large \textbf{Faculty of Computer Science / Mathematics}}\\[4pt]
+    {\Large \textbf{Probability for Computer Science}}\\[3pt]
+    {\large \textbf{Advanced Practice Exam}}\\[5pt]
+    \rule{\textwidth}{1.2pt}
+\end{center}
+
+\vspace{0.1cm}
+\noindent
+\begin{tabularx}{\textwidth}{lX lX}
+    \textbf{Name:} & \hrulefill & \textbf{Student ID:} & \hrulefill \\
+    \textbf{Time Allocated:} & 90 Minutes & \textbf{Total Points:} & 50 Points \\
+\end{tabularx}
+
+\vspace{0.3cm}
+\begin{tcolorbox}[colback=lightgrey,colframe=rubblue,title=\textbf{Exam Instructions},arc=1.5mm]
+\small
+\begin{itemize}[noitemsep,topsep=2pt,leftmargin=5mm]
+    \item This exam consists of 5 problems, each worth 10 points.
+    \item Provide complete mathematical derivations and justify all key steps.
+    \item Non-programmable calculators and course formula sheets are permitted.
+\end{itemize}
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+% -------------------------------------------------------------
+% Task 1
+% -------------------------------------------------------------
+\section*{Problem 1: Continuous Density, Transformation \& Moments \hfill (10 Points)}
+Let $X$ be a continuous random variable with probability density function (PDF):
+\[
+f_X(x) = \begin{cases} c \cdot x(1-x), & \text{for } 0 \le x \le 1, \\ 0, & \text{otherwise.} \end{cases}
+\]
+\begin{enumerate}[label=(\alph*), itemsep=4pt]
+    \item Determine the normalization constant $c \in \mathbb{R}$. \hfill \textbf{[3 Pts]}
+    \item Compute the expectation $\mathbb{E}[X]$ and the variance $\text{Var}(X)$. \hfill \textbf{[4 Pts]}
+    \item Consider the transformation $Y = -\ln(X)$. Determine the cumulative distribution function $F_Y(y) = \mathbb{P}(Y \le y)$ for $y > 0$. \hfill \textbf{[3 Pts]}
+\end{enumerate}
+
+\vspace{0.4cm}
+
+% -------------------------------------------------------------
+% Task 2
+% -------------------------------------------------------------
+\section*{Problem 2: Joint PMF, Covariance \& Independence \hfill (10 Points)}
+Two discrete random variables $X$ and $Y$ have the joint probability mass function $p_{X,Y}(x, y)$ given by the following table:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|ccc}
+\toprule
+$p_{X,Y}(x,y)$ & $Y = -1$ & $Y = 0$ & $Y = 1$ \\
+\midrule
+$X = 0$ & $0$ & $1/2$ & $0$ \\
+$X = 1$ & $1/4$ & $0$ & $1/4$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{enumerate}[label=(\alph*), itemsep=4pt]
+    \item Compute the marginal distributions $p_X(x)$ and $p_Y(y)$ for all possible outcomes. \hfill \textbf{[3 Pts]}
+    \item Calculate the expectations $\mathbb{E}[X]$, $\mathbb{E}[Y]$, and $\mathbb{E}[XY]$. \hfill \textbf{[3 Pts]}
+    \item Calculate the covariance $\text{Cov}(X, Y)$. \hfill \textbf{[2 Pts]}
+    \item Formally determine whether $X$ and $Y$ are statistically independent. \hfill \textbf{[2 Pts]}
+\end{enumerate}
+
+\vspace{0.4cm}
+
+% -------------------------------------------------------------
+% Task 3 (NEU: Höhere Momente & Zentrale Momente)
+% -------------------------------------------------------------
+\section*{Problem 3: Higher Moments \& Central Moments \hfill (10 Points)}
+Let $X$ be a discrete random variable taking values in $\{-2, 0, 2, 4\}$ with probability mass function:
+\[
+p_X(-2) = \frac{1}{8}, \quad p_X(0) = \frac{1}{2}, \quad p_X(2) = \frac{1}{4}, \quad p_X(4) = \frac{1}{8}.
+\]
+\begin{enumerate}[label=(\alph*), itemsep=4pt]
+    \item Calculate the expected value $\mathbb{E}[X]$ and the variance $\text{Var}(X)$. \hfill \textbf{[3 Pts]}
+    \item Calculate the third raw moment $\mathbb{E}[X^3]$. \hfill \textbf{[3 Pts]}
+    \item Derive the third central moment $\mu_3 = \mathbb{E}[(X - \mathbb{E}[X])^3]$ in two ways:
+    \begin{itemize}[noitemsep]
+        \item directly via the definition of central moments, and
+        \item using the expansion formula $\mu_3 = \mathbb{E}[X^3] - 3\mathbb{E}[X]\mathbb{E}[X^2] + 2(\mathbb{E}[X])^3$.
+    \end{itemize} \hfill \textbf{[4 Pts]}
+\end{enumerate}
+
+\newpage
+
+% -------------------------------------------------------------
+% Task 4
+% -------------------------------------------------------------
+\section*{Problem 4: Memorylessness \& Minimum of Exponential RVs \hfill (10 Points)}
+Consider two independent servers with service lifetimes $T_1 \sim \text{Exp}(\lambda_1)$ and $T_2 \sim \text{Exp}(\lambda_2)$, where $\lambda_1, \lambda_2 > 0$.
+\begin{enumerate}[label=(\alph*), itemsep=4pt]
+    \item Using the memoryless property of the exponential distribution, determine the conditional expectation $\mathbb{E}[T_1 \mid T_1 > 5]$. \hfill \textbf{[3 Pts]}
+    \item Let $M = \min(T_1, T_2)$ denote the time until the first server failure occurs. Compute the survival probability $\mathbb{P}(M > t)$ for $t \ge 0$, and identify the distribution of $M$ with its parameter. \hfill \textbf{[4 Pts]}
+    \item Compute the probability $\mathbb{P}(T_1 < T_2)$ that server 1 fails before server 2. \hfill \textbf{[3 Pts]}
+\end{enumerate}
+
+\vspace{0.5cm}
+
+% -------------------------------------------------------------
+% Task 5
+% -------------------------------------------------------------
+\section*{Problem 5: Random Sums \& Concentration Bounds \hfill (10 Points)}
+A web service receives $N$ requests during a one-minute interval, where $N \sim \text{Poisson}(100)$. Each request independently requires an intensive database write operation with probability $p = 0.20$. Let $X_i \sim \text{Bernoulli}(0.2)$ be i.i.d. indicators independent of $N$, and let $S_N = \sum_{i=1}^N X_i$ be the total number of write operations in that minute.
+\begin{enumerate}[label=(\alph*), itemsep=4pt]
+    \item Compute the expected number of write operations $\mathbb{E}[S_N]$ using the Law of Total Expectation. \hfill \textbf{[3 Pts]}
+    \item Given that $\text{Var}(S_N) = 20$, use Chebyshev's inequality to find an upper bound for the probability that $S_N$ deviates from its expected value by at least $10$, i.e., $\mathbb{P}(|S_N - \mathbb{E}[S_N]| \ge 10)$. \hfill \textbf{[4 Pts]}
+    \item Use your result from part (b) to provide a guaranteed lower bound for the probability that $S_N$ strictly lies in the interval $(10, 30)$. \hfill \textbf{[3 Pts]}
+\end{enumerate}
+
+\vspace{1cm}
+\begin{center}
+    \rule{0.4\textwidth}{0.5pt}\\
+    {\small \textit{End of Exam Paper -- Good Luck!}}
+\end{center}
+
+\end{document}
