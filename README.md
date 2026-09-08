@@ -74,7 +74,7 @@ Everything runs directly in your browser without requiring a heavy local TeXLive
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/opentex.git
+   git clone https://github.com/pittigs/opentex.git
    cd opentex
    ```
 
