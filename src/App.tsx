@@ -14,6 +14,11 @@ import { DashboardView } from './components/dashboard/DashboardView';
 import { AccountModal } from './components/dashboard/AccountModal';
 import { NewProjectModal } from './components/dashboard/NewProjectModal';
 import { LockScreen } from './components/auth/LockScreen';
+import { TableEditorModal } from './components/modals/TableEditorModal';
+import { PlotGeneratorModal } from './components/modals/PlotGeneratorModal';
+import { CitationModal } from './components/modals/CitationModal';
+import { EncryptionModal } from './components/modals/EncryptionModal';
+import { exportArxivPackage } from './services/exportService';
 import type { 
   ProjectFile, 
   CompilerLogEntry, 
@@ -91,6 +96,24 @@ export const App: React.FC = () => {
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [isGitModalOpen, setIsGitModalOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Mega Features Phase 1
+  const [isTableEditorOpen, setIsTableEditorOpen] = useState(false);
+  const [isPlotGeneratorOpen, setIsPlotGeneratorOpen] = useState(false);
+  const [isCitationModalOpen, setIsCitationModalOpen] = useState(false);
+  const [isEncryptionModalOpen, setIsEncryptionModalOpen] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
+  const [isDoubleBlind, setIsDoubleBlind] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isZenMode) {
+        setIsZenMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isZenMode]);
 
   // 4. Editor References & Line tracking
   const editorRef = useRef<any>(null);
@@ -514,6 +537,20 @@ export const App: React.FC = () => {
     saveAs(blob, `${projectName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_source.zip`);
   };
 
+  // Export clean arXiv Submission Package
+  const handleExportArxiv = async () => {
+    await exportArxivPackage(files, projectName);
+  };
+
+  // Import Decrypted Project Files
+  const handleImportDecryptedFiles = (decryptedFiles: ProjectFile[], name: string) => {
+    setFiles(decryptedFiles);
+    setProjectName(name);
+    if (decryptedFiles.length > 0) {
+      setActiveFileId(decryptedFiles[0].id);
+    }
+  };
+
   // Add Simulated Collaborator
   const handleAddCollaborator = () => {
     const names = [
@@ -636,33 +673,57 @@ export const App: React.FC = () => {
         onOpenAccount={() => setIsAccountModalOpen(true)}
         userProfile={userProfile}
         onLockSession={handleLockSession}
+        onOpenTableEditor={() => setIsTableEditorOpen(true)}
+        onOpenPlotGenerator={() => setIsPlotGeneratorOpen(true)}
+        onOpenCitationManager={() => setIsCitationModalOpen(true)}
+        onOpenEncryption={() => setIsEncryptionModalOpen(true)}
+        onExportArxiv={handleExportArxiv}
+        isZenMode={isZenMode}
+        onToggleZenMode={() => setIsZenMode(!isZenMode)}
+        isDoubleBlind={isDoubleBlind}
+        onToggleDoubleBlind={() => setIsDoubleBlind(!isDoubleBlind)}
       />
 
       {/* Main Workspace Split Layout */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Leftmost: File Explorer */}
-        <FileTree
-          files={files}
-          activeFileId={activeFileId}
-          onSelectFile={handleSelectFile}
-          onCreateFile={handleCreateFile}
-          onDeleteFile={handleDeleteFile}
-          onRenameFile={handleRenameFile}
-          wordCount={docStats.wordCount}
-          charCount={docStats.charCount}
-          equationCount={docStats.equationCount}
-        />
+        {/* Floating Zen Mode Banner */}
+        {isZenMode && (
+          <div className="absolute top-3 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-950/80 border border-indigo-500/40 text-indigo-200 text-xs font-medium backdrop-blur-md shadow-lg animate-fade-in">
+            <span>Zen-Modus aktiv (ESC zum Beenden)</span>
+            <button
+              onClick={() => setIsZenMode(false)}
+              className="ml-1 text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Leftmost: File Explorer (hidden in Zen mode) */}
+        {!isZenMode && (
+          <FileTree
+            files={files}
+            activeFileId={activeFileId}
+            onSelectFile={handleSelectFile}
+            onCreateFile={handleCreateFile}
+            onDeleteFile={handleDeleteFile}
+            onRenameFile={handleRenameFile}
+            wordCount={docStats.wordCount}
+            charCount={docStats.charCount}
+            equationCount={docStats.equationCount}
+          />
+        )}
 
         {/* Side Panel: Math Snippet Palette */}
         <MathSnippetsPanel
-          isOpen={isMathOpen}
+          isOpen={isMathOpen && !isZenMode}
           onClose={() => setIsMathOpen(false)}
           onInsertSnippet={handleInsertSnippet}
         />
 
         {/* Side Panel: Review & Track Changes */}
         <ReviewPanel
-          isOpen={isReviewOpen}
+          isOpen={isReviewOpen && !isZenMode}
           onClose={() => setIsReviewOpen(false)}
           comments={comments}
           suggestions={suggestions}
@@ -677,14 +738,14 @@ export const App: React.FC = () => {
 
         {/* Side Panel: AI Assistant & DOI Fetcher */}
         <AiAssistantPanel
-          isOpen={isAiOpen}
+          isOpen={isAiOpen && !isZenMode}
           onClose={() => setIsAiOpen(false)}
           onInsertText={handleInsertSnippet}
           onAppendToBib={handleAppendToBib}
         />
 
         {/* Center: Monaco LaTeX Code Editor (with Visual Mode toggle) */}
-        <div className="flex-1 flex flex-col h-full border-r border-slate-800 relative">
+        <div className={`flex-1 flex flex-col h-full border-r border-slate-800 relative ${isZenMode ? 'max-w-4xl mx-auto border-r-0 shadow-2xl' : ''}`}>
           <LatexEditor
             value={activeContent}
             onChange={handleUpdateContent}
@@ -701,28 +762,61 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* Right: PDF Live Document Preview */}
-        <div className="flex-1 flex flex-col h-full relative">
-          <PdfViewer
-            code={activeContent}
-            isCompiling={isCompiling}
-            onDownloadPdf={handleDownloadPdf}
-            onJumpToLine={handleJumpToLine}
-          />
-        </div>
+        {/* Right: PDF Live Document Preview (hidden in Zen mode) */}
+        {!isZenMode && (
+          <div className="flex-1 flex flex-col h-full relative">
+            <PdfViewer
+              code={activeContent}
+              isCompiling={isCompiling}
+              onDownloadPdf={handleDownloadPdf}
+              onJumpToLine={handleJumpToLine}
+              isDoubleBlind={isDoubleBlind}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Bottom: Diagnostics & Compiler Logs Drawer */}
-      <LogPanel
-        logs={logs.length > 0 ? logs : liveLogs}
-        isOpen={isLogOpen}
-        onToggle={() => setIsLogOpen(!isLogOpen)}
-        onJumpToLine={handleJumpToLine}
-        durationMs={compileDuration}
-        engineUsed={engine}
-      />
+      {/* Bottom: Diagnostics & Compiler Logs Drawer (hidden in Zen mode) */}
+      {!isZenMode && (
+        <LogPanel
+          logs={logs.length > 0 ? logs : liveLogs}
+          isOpen={isLogOpen}
+          onToggle={() => setIsLogOpen(!isLogOpen)}
+          onJumpToLine={handleJumpToLine}
+          durationMs={compileDuration}
+          engineUsed={engine}
+        />
+      )}
 
       {/* Modals */}
+      <TableEditorModal
+        isOpen={isTableEditorOpen}
+        onClose={() => setIsTableEditorOpen(false)}
+        onInsert={handleInsertSnippet}
+      />
+
+      <PlotGeneratorModal
+        isOpen={isPlotGeneratorOpen}
+        onClose={() => setIsPlotGeneratorOpen(false)}
+        onInsert={handleInsertSnippet}
+      />
+
+      <CitationModal
+        isOpen={isCitationModalOpen}
+        onClose={() => setIsCitationModalOpen(false)}
+        activeTexContent={activeContent}
+        bibContent={files.filter((f) => f.name.endsWith('.bib')).map((f) => f.content).join('\n')}
+        onInsertBibtex={handleAppendToBib}
+      />
+
+      <EncryptionModal
+        isOpen={isEncryptionModalOpen}
+        onClose={() => setIsEncryptionModalOpen(false)}
+        files={files}
+        projectName={projectName}
+        onImportDecryptedFiles={handleImportDecryptedFiles}
+      />
+
       <AccountModal
         isOpen={isAccountModalOpen}
         onClose={() => setIsAccountModalOpen(false)}

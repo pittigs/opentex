@@ -17,13 +17,15 @@ interface PdfViewerProps {
   isCompiling: boolean;
   onDownloadPdf: () => void;
   onJumpToLine?: (line: number) => void;
+  isDoubleBlind?: boolean;
 }
 
 export const PdfViewer: React.FC<PdfViewerProps> = ({
   code,
   isCompiling,
   onDownloadPdf,
-  onJumpToLine
+  onJumpToLine,
+  isDoubleBlind,
 }) => {
   const [zoom, setZoom] = useState(100);
   const [currentPage, setCurrentPage] = useState(1);
@@ -591,11 +593,15 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     {subtitle && (
                       <div className="text-sm font-serif italic text-slate-700 mt-1">{subtitle}</div>
                     )}
-                    {rawAuthor && (
+                    {isDoubleBlind ? (
+                      <div className="inline-block mx-auto text-xs font-mono font-semibold text-amber-800 bg-amber-100 border border-amber-300 px-3 py-1 rounded mt-2">
+                        [Anonymisiert für Double-Blind Peer Review — Autoren & Institutionen verborgen]
+                      </div>
+                    ) : rawAuthor ? (
                       <div className="text-xs font-serif text-slate-700 mt-2 font-medium">
                         {rawAuthor}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
 

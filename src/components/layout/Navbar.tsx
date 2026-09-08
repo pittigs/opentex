@@ -17,7 +17,15 @@ import {
   MessageSquare,
   Bot,
   ArrowLeft,
-  Lock
+  Lock,
+  Table as TableIcon,
+  LineChart,
+  BookOpen,
+  ShieldCheck,
+  EyeOff,
+  Maximize2,
+  Minimize2,
+  FileArchive
 } from 'lucide-react';
 import type { Collaborator, LaTeXTemplate, GitConfig, UserProfile } from '../../types';
 
@@ -53,6 +61,16 @@ interface NavbarProps {
   onOpenAccount?: () => void;
   userProfile?: UserProfile;
   onLockSession?: () => void;
+  // Mega Features Phase 1
+  onOpenTableEditor?: () => void;
+  onOpenPlotGenerator?: () => void;
+  onOpenCitationManager?: () => void;
+  onOpenEncryption?: () => void;
+  onExportArxiv?: () => void;
+  isZenMode?: boolean;
+  onToggleZenMode?: () => void;
+  isDoubleBlind?: boolean;
+  onToggleDoubleBlind?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -84,7 +102,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onBackToDashboard,
   onOpenAccount,
   userProfile,
-  onLockSession
+  onLockSession,
+  onOpenTableEditor,
+  onOpenPlotGenerator,
+  onOpenCitationManager,
+  onOpenEncryption,
+  onExportArxiv,
+  isZenMode,
+  onToggleZenMode,
+  isDoubleBlind,
+  onToggleDoubleBlind
 }) => {
   return (
     <header className="h-14 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-3 flex items-center justify-between z-30 select-none">
@@ -272,6 +299,39 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="hidden lg:inline">KI-Copilot</span>
         </button>
 
+        {/* Table Editor */}
+        {onOpenTableEditor && (
+          <button
+            onClick={onOpenTableEditor}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Visueller Tabellen-Editor (Booktabs)"
+          >
+            <TableIcon className="w-4 h-4 text-blue-400" />
+          </button>
+        )}
+
+        {/* Plot Generator */}
+        {onOpenPlotGenerator && (
+          <button
+            onClick={onOpenPlotGenerator}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="CSV-zu-PGFPlots / TikZ Diagramme"
+          >
+            <LineChart className="w-4 h-4 text-teal-400" />
+          </button>
+        )}
+
+        {/* Citation Manager */}
+        {onOpenCitationManager && (
+          <button
+            onClick={onOpenCitationManager}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Literatur & Zitations-Manager (DOI / arXiv / Audit)"
+          >
+            <BookOpen className="w-4 h-4 text-purple-400" />
+          </button>
+        )}
+
         {/* Math Palette */}
         <button
           onClick={onOpenMathPalette}
@@ -331,6 +391,58 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <FolderArchive className="w-4 h-4 text-amber-400" />
         </button>
+
+        {/* arXiv Clean Package Export */}
+        {onExportArxiv && (
+          <button
+            onClick={onExportArxiv}
+            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Bereinigtes arXiv Submission Package exportieren"
+          >
+            <FileArchive className="w-4 h-4 text-rose-400" />
+          </button>
+        )}
+
+        {/* E2E Encryption */}
+        {onOpenEncryption && (
+          <button
+            onClick={onOpenEncryption}
+            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Ende-zu-Ende-Verschlüsselung (AES-256-GCM)"
+          >
+            <ShieldCheck className="w-4 h-4 text-amber-400" />
+          </button>
+        )}
+
+        {/* Double-Blind Review Toggle */}
+        {onToggleDoubleBlind && (
+          <button
+            onClick={onToggleDoubleBlind}
+            className={`p-1.5 rounded-lg text-xs font-medium border transition ${
+              isDoubleBlind
+                ? 'bg-amber-600/30 text-amber-300 border-amber-500/60'
+                : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:bg-slate-800'
+            }`}
+            title={isDoubleBlind ? 'Double-Blind Review: Aktiv (Autoren verborgen)' : 'Double-Blind Review aktivieren'}
+          >
+            <EyeOff className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Zen / Focus Mode Toggle */}
+        {onToggleZenMode && (
+          <button
+            onClick={onToggleZenMode}
+            className={`p-1.5 rounded-lg text-xs font-medium border transition ${
+              isZenMode
+                ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/60'
+                : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:bg-slate-800'
+            }`}
+            title={isZenMode ? 'Fokus-Modus beenden' : 'Zen / Fokus-Modus (Ablenkungsfrei)'}
+          >
+            {isZenMode ? <Minimize2 className="w-4 h-4 text-indigo-400" /> : <Maximize2 className="w-4 h-4 text-indigo-400" />}
+          </button>
+        )}
 
         {/* Theme Toggle */}
         <button
