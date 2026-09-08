@@ -13,6 +13,10 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="MIT License" />
 </p>
 
+<p align="center">
+  <a href="https://pittigs.github.io/opentex/"><strong>🚀 Try Live Demo: pittigs.github.io/opentex »</strong></a>
+</p>
+
 ---
 
 ## 🌟 Overview
