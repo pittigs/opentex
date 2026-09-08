@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   User, 
@@ -11,30 +11,83 @@ import {
   ShieldCheck, 
   Sparkles,
   Save,
-  Globe
+  Globe,
+  Fingerprint,
+  Lock,
+  Trash2,
+  Plus,
+  AlertCircle
 } from 'lucide-react';
 import type { UserProfile } from '../../types';
+import { 
+  getStoredPasskeys, 
+  registerPasskey, 
+  deletePasskey, 
+  setPin,
+  type StoredPasskey
+} from '../../services/passkeyService';
 
 interface AccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   profile: UserProfile;
   onSaveProfile: (updated: UserProfile) => void;
+  onLockSession?: () => void;
 }
 
-type TabType = 'profile' | 'git' | 'ai' | 'storage';
+type TabType = 'profile' | 'security' | 'git' | 'ai' | 'storage';
 
 export const AccountModal: React.FC<AccountModalProps> = ({
   isOpen,
   onClose,
   profile,
   onSaveProfile,
+  onLockSession,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [formData, setFormData] = useState<UserProfile>({ ...profile });
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Security & Passkey State
+  const [passkeys, setPasskeys] = useState<StoredPasskey[]>(() => getStoredPasskeys());
+  const [newPin, setNewPinInput] = useState('');
+  const [pinSaved, setPinSaved] = useState(false);
+  const [passkeyError, setPasskeyError] = useState<string | null>(null);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+
+  useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    setPasskeys(getStoredPasskeys());
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const handleRegisterNewPasskey = async () => {
+    setPasskeyError(null);
+    setPasskeyLoading(true);
+    try {
+      await registerPasskey(formData.email, formData.name);
+      setPasskeys(getStoredPasskeys());
+    } catch (err: any) {
+      setPasskeyError(err.message || 'Passkey-Registrierung fehlgeschlagen.');
+    } finally {
+      setPasskeyLoading(false);
+    }
+  };
+
+  const handleDeletePasskey = (id: string) => {
+    const updated = deletePasskey(id);
+    setPasskeys(updated);
+  };
+
+  const handleSavePin = () => {
+    if (newPin.length >= 4) {
+      setPin(newPin);
+      setPinSaved(true);
+      setTimeout(() => setPinSaved(false), 1500);
+      setNewPinInput('');
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +144,19 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           >
             <User className="w-4 h-4" />
             <span>Profil & Identität</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('security')}
+            className={`flex items-center space-x-2 py-3 px-3 text-xs font-medium border-b-2 transition ${
+              activeTab === 'security'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Fingerprint className="w-4 h-4" />
+            <span>Sicherheit & Passkeys</span>
           </button>
 
           <button
@@ -169,7 +235,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       value={formData.affiliation}
                       onChange={(e) => setFormData({ ...formData, affiliation: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-700/80 rounded-lg pl-8 pr-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
-                      placeholder="z.B. Ruhr-Universität Bochum"
+                      placeholder="z.B. TU München / ETH Zürich / RWTH Aachen / Oxford / Ihre Hochschule"
                     />
                     <GraduationCap className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
                   </div>
@@ -181,7 +247,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"
-                    placeholder="z.B. PhD Candidate / Student"
+                    placeholder="z.B. PhD Candidate / Student / Dozent"
                   />
                 </div>
               </div>
@@ -210,6 +276,134 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   placeholder="Kurze Beschreibung deiner akademischen Schwerpunkte..."
                 />
               </div>
+            </div>
+          )}
+
+          {activeTab === 'security' && (
+            <div className="space-y-5 animate-in fade-in duration-150">
+              {/* Passkey Overview */}
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                      <Fingerprint className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-white">Biometrische Passkeys (WebAuthn / FIDO2)</h3>
+                      <p className="text-[11px] text-slate-400">
+                        Sichere passwortlose Anmeldung via Touch ID, Face ID, Windows Hello oder YubiKey.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleRegisterNewPasskey}
+                    disabled={passkeyLoading}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center space-x-1.5 cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{passkeyLoading ? 'Wird registriert...' : 'Passkey hinzufügen'}</span>
+                  </button>
+                </div>
+
+                {passkeyError && (
+                  <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-800/40 text-rose-300 text-xs flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{passkeyError}</span>
+                  </div>
+                )}
+
+                {/* List of registered Passkeys */}
+                <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                  <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                    Registrierte Passkey-Geräte ({passkeys.length})
+                  </span>
+
+                  {passkeys.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic py-1">
+                      Noch kein biometrischer Passkey hinterlegt. Klicke auf &bdquo;Passkey hinzufügen&ldquo;.
+                    </p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {passkeys.map((p) => (
+                        <div
+                          key={p.id}
+                          className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between"
+                        >
+                          <div className="flex items-center space-x-2.5">
+                            <Fingerprint className="w-4 h-4 text-cyan-400" />
+                            <div>
+                              <span className="text-xs font-bold text-slate-200 block">{p.name}</span>
+                              <span className="text-[10px] text-slate-400 block">Registriert am {p.createdAt}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePasskey(p.id)}
+                            className="p-1 rounded hover:bg-rose-950/40 text-slate-500 hover:text-rose-400 transition cursor-pointer"
+                            title="Passkey entfernen"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Fallback PIN Configuration */}
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Key className="w-4 h-4 text-amber-400" />
+                  <h3 className="text-xs font-bold text-white">Sicherheits-PIN für Notfall-Zugang</h3>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Wird verwendet, falls biometrische Hardware temporär nicht verfügbar ist (Standard-PIN: 1234).
+                </p>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="password"
+                    value={newPin}
+                    onChange={(e) => setNewPinInput(e.target.value)}
+                    placeholder="Neuen PIN festlegen (min. 4 Zeichen)"
+                    className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 font-mono flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSavePin}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer"
+                  >
+                    {pinSaved ? 'Gespeichert!' : 'PIN ändern'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Session Lock Action */}
+              {onLockSession && (
+                <div className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-950/20 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-indigo-400" />
+                      Sitzung jetzt sperren
+                    </h3>
+                    <p className="text-[11px] text-slate-300 mt-0.5">
+                      Sperrt den OpenTeX-Workspace sofort. Entsperrung nur mit Passkey oder PIN.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onLockSession();
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition shadow cursor-pointer"
+                  >
+                    Jetzt sperren
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

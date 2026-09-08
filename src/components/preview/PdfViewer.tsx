@@ -399,28 +399,28 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         return;
       }
 
-      // Handle Header Center Blocks (e.g. Ruhr-Universität Bochum Exam Header)
-      if (cleanLine.includes('Ruhr-Universit') || cleanLine.includes('Faculty of Computer Science') || cleanLine.includes('Advanced Practice Exam')) {
-        elements.push(
-          <div key={`hdr-${idx}`} className="text-center font-sans">
-            {cleanLine.includes('Ruhr-Universit') && (
-              <div className="text-lg font-extrabold text-[#003560] tracking-tight">
-                Ruhr-Universität Bochum
+      // Handle Academic Exam & Document Center Headers (universal for any institution)
+      if (cleanLine.includes('universityName') || cleanLine.includes('Universit') || cleanLine.includes('Faculty') || cleanLine.includes('Fakult') || cleanLine.includes('Exam') || cleanLine.includes('Klausur') || cleanLine.includes('Practice Exam')) {
+        const text = cleanLine
+          .replace(/\\textbf|\\color\{[^}]+\}|\\LARGE|\\Large|\\large|\\normalsize/g, '')
+          .replace(/\\universityName/g, 'Universität / Hochschule')
+          .replace(/\\facultyName/g, 'Fakultät für Informatik & Mathematik')
+          .replace(/\\courseName/g, 'Wahrscheinlichkeit & Verteilte Systeme')
+          .replace(/\\examTitle/g, 'Modul-Abschlussprüfung (Exam)')
+          .replace(/\\[a-zA-Z]+/g, '')
+          .replace(/[{}]/g, '')
+          .trim();
+
+        if (text) {
+          elements.push(
+            <div key={`hdr-${idx}`} className="text-center font-sans my-0.5">
+              <div className="text-sm font-bold text-slate-800 tracking-tight">
+                {text}
               </div>
-            )}
-            {cleanLine.includes('Faculty of Computer Science') && (
-              <div className="text-xs font-semibold text-slate-700 mt-0.5">
-                Faculty of Computer Science / Mathematics
-              </div>
-            )}
-            {cleanLine.includes('Advanced Practice Exam') && (
-              <div className="text-sm font-bold text-slate-900 mt-1 mb-2">
-                Probability for Computer Science — Advanced Practice Exam
-              </div>
-            )}
-          </div>
-        );
-        return;
+            </div>
+          );
+          return;
+        }
       }
 
       // Handle End of Exam Paper
@@ -624,7 +624,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
               {/* Running Footer */}
               <div className="border-t border-slate-300 pt-2 mt-8 flex justify-between text-[9px] text-slate-500 font-serif">
-                <span>Ruhr-Universität Bochum</span>
+                <span>Academic Document</span>
                 <span>Page {actualPageNumber}</span>
               </div>
             </div>

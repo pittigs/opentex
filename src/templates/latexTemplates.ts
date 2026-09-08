@@ -360,10 +360,10 @@ export const CV_TEMPLATE: LaTeXTemplate = {
 
 export const EXAM_TEMPLATE: LaTeXTemplate = {
   id: 'exam-paper',
-  title: 'Ruhr-Universität Bochum Klausur / Exam',
-  description: 'Offizielle Klausurvorlage mit Boxen, Punkteverteilung, mehrteiligen Aufgaben und Matrizen.',
+  title: 'Universitäts-Klausur & Aufgabenblatt / Exam',
+  description: 'Akademische Klausur- und Übungsvorlage für Hochschulen mit Aufgabenboxen, Deckblatt und Punkteverteilung.',
   category: 'CheatSheet',
-  author: 'Ruhr-Universität Bochum',
+  author: 'OpenTeX Academic',
   icon: 'FileText',
   files: [
     {
@@ -386,15 +386,21 @@ export const EXAM_TEMPLATE: LaTeXTemplate = {
 \\usepackage{xcolor}
 \\usepackage{tcolorbox}
 
-% Colors
-\\definecolor{rubblue}{RGB}{0, 53, 96}
+% University & Institution Colors
+\\definecolor{univblue}{RGB}{30, 58, 138}
 \\definecolor{darkslate}{RGB}{30, 41, 59}
 \\definecolor{lightgrey}{RGB}{248, 250, 252}
 
+% Configuration: Set your university & course details here
+\\newcommand{\\universityName}{Universit\\"at / Hochschule}
+\\newcommand{\\facultyName}{Fakult\\"at f\\"ur Informatik & Mathematik}
+\\newcommand{\\courseName}{Wahrscheinlichkeit & Verteilte Systeme}
+\\newcommand{\\examTitle}{Modul-Abschlusspr\\"ufung (Exam)}
+
 \\pagestyle{fancy}
 \\fancyhf{}
-\\rhead{\\textcolor{darkslate}{\\small \\textbf{Probability for Computer Science}}}
-\\lhead{\\textcolor{darkslate}{\\small Advanced Mock Exam (50 Points)}}
+\\rhead{\\textcolor{darkslate}{\\small \\textbf{\\courseName}}}
+\\lhead{\\textcolor{darkslate}{\\small \\examTitle}}
 \\rfoot{\\textcolor{darkslate}{\\small Page \\thepage}}
 \\renewcommand{\\headrulewidth}{0.5pt}
 \\renewcommand{\\footrulewidth}{0.3pt}
@@ -402,7 +408,7 @@ export const EXAM_TEMPLATE: LaTeXTemplate = {
 \\setlength{\\parindent}{0pt}
 \\setlength{\\parskip}{5pt}
 
-\\titleformat{\\section}{\\Large\\bfseries\\color{rubblue}}{}{0em}{}[\\titlerule]
+\\titleformat{\\section}{\\Large\\bfseries\\color{univblue}}{}{0em}{}[\\titlerule]
 
 \\begin{document}
 
@@ -410,27 +416,27 @@ export const EXAM_TEMPLATE: LaTeXTemplate = {
 % Header
 % -------------------------------------------------------------
 \\begin{center}
-    {\\LARGE \\textbf{\\color{rubblue}Ruhr-Universit\\"at Bochum}}\\\\[3pt]
-    {\\large \\textbf{Faculty of Computer Science / Mathematics}}\\\\[4pt]
-    {\\Large \\textbf{Probability for Computer Science}}\\\\[3pt]
-    {\\large \\textbf{Advanced Practice Exam}}\\\\[5pt]
+    {\\LARGE \\textbf{\\color{univblue}\\universityName}}\\\\[3pt]
+    {\\large \\textbf{\\facultyName}}\\\\[4pt]
+    {\\Large \\textbf{\\courseName}}\\\\[3pt]
+    {\\large \\textbf{\\examTitle}}\\\\[5pt]
     \\rule{\\textwidth}{1.2pt}
 \\end{center}
 
 \\vspace{0.1cm}
 \\noindent
 \\begin{tabularx}{\\textwidth}{lX lX}
-    \\textbf{Name:} & \\hrulefill & \\textbf{Student ID:} & \\hrulefill \\\\
-    \\textbf{Time Allocated:} & 90 Minutes & \\textbf{Total Points:} & 50 Points \\\\
+    \\textbf{Name:} & \\hrulefill & \\textbf{Matrikelnr. / ID:} & \\hrulefill \\\\
+    \\textbf{Bearbeitungszeit:} & 90 Minuten & \\textbf{Gesamtpunkte:} & 50 Punkte \\\\
 \\end{tabularx}
 
 \\vspace{0.3cm}
-\\begin{tcolorbox}[colback=lightgrey,colframe=rubblue,title=\\textbf{Exam Instructions},arc=1.5mm]
+\\begin{tcolorbox}[colback=lightgrey,colframe=univblue,title=\\textbf{Pr\\"ufungshinweise / Instructions},arc=1.5mm]
 \\small
 \\begin{itemize}[noitemsep,topsep=2pt,leftmargin=5mm]
-    \\item This exam consists of 5 problems, each worth 10 points.
-    \\item Provide complete mathematical derivations and justify all key steps.
-    \\item Non-programmable calculators and course formula sheets are permitted.
+    \\item Diese Pr\\"ufung umfasst 5 Aufgaben mit jeweils 10 Punkten.
+    \\item Begr\\"unden Sie alle mathematischen Schritte und Zwischenergebnisse.
+    \\item Taschenrechner und Formelsammlungen gem\\"a{\\ss} Modulvorgaben sind zugelassen.
 \\end{itemize}
 \\end{tcolorbox}
 

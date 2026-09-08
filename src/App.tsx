@@ -13,6 +13,7 @@ import { AiAssistantPanel } from './components/tools/AiAssistantPanel';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { AccountModal } from './components/dashboard/AccountModal';
 import { NewProjectModal } from './components/dashboard/NewProjectModal';
+import { LockScreen } from './components/auth/LockScreen';
 import type { 
   ProjectFile, 
   CompilerLogEntry, 
@@ -41,6 +42,7 @@ import {
   deleteProject,
   toggleStarProject
 } from './services/projectStorage';
+import { isVaultLocked, setVaultLocked } from './services/passkeyService';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
@@ -52,6 +54,17 @@ export const App: React.FC = () => {
   const [activeProjectId, setActiveProjectIdState] = useState<string>(() => getActiveProjectId());
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState<boolean>(() => isVaultLocked());
+
+  const handleLockSession = () => {
+    setVaultLocked(true);
+    setIsLocked(true);
+  };
+
+  const handleUnlockSession = () => {
+    setVaultLocked(false);
+    setIsLocked(false);
+  };
 
   const initialProject = projects.find((p) => p.id === activeProjectId) || projects[0];
 
@@ -533,6 +546,11 @@ export const App: React.FC = () => {
     setCollaborators((prev) => [...prev, newCollab]);
   };
 
+  // If session is locked, render the biometric LockScreen
+  if (isLocked) {
+    return <LockScreen userProfile={userProfile} onUnlock={handleUnlockSession} />;
+  }
+
   // If on Dashboard view, render the Main Screen
   if (currentView === 'dashboard') {
     return (
@@ -549,6 +567,7 @@ export const App: React.FC = () => {
           onSelectTemplateDirect={handleSelectTemplateDirect}
           isDarkMode={isDarkMode}
           toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+          onLockSession={handleLockSession}
         />
 
         <AccountModal
@@ -556,6 +575,7 @@ export const App: React.FC = () => {
           onClose={() => setIsAccountModalOpen(false)}
           profile={userProfile}
           onSaveProfile={handleSaveUserProfile}
+          onLockSession={handleLockSession}
         />
 
         <NewProjectModal
@@ -615,6 +635,7 @@ export const App: React.FC = () => {
         onBackToDashboard={handleBackToDashboard}
         onOpenAccount={() => setIsAccountModalOpen(true)}
         userProfile={userProfile}
+        onLockSession={handleLockSession}
       />
 
       {/* Main Workspace Split Layout */}
@@ -707,6 +728,7 @@ export const App: React.FC = () => {
         onClose={() => setIsAccountModalOpen(false)}
         profile={userProfile}
         onSaveProfile={handleSaveUserProfile}
+        onLockSession={handleLockSession}
       />
 
       <TemplateModal

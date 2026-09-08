@@ -18,7 +18,8 @@ import {
   Sparkles, 
   GitBranch, 
   ChevronRight,
-  HardDrive
+  HardDrive,
+  Lock
 } from 'lucide-react';
 import type { ProjectSummary, UserProfile } from '../../types';
 import { exportProjectAsZip } from '../../services/exportService';
@@ -35,6 +36,7 @@ interface DashboardViewProps {
   onSelectTemplateDirect: (templateId: string) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  onLockSession?: () => void;
 }
 
 type FilterCategory = 'all' | 'mine' | 'shared' | 'starred' | 'archive';
@@ -49,6 +51,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onDuplicateProject,
   onDeleteProject,
   onSelectTemplateDirect,
+  onLockSession,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all');
@@ -161,6 +164,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
             </div>
           </button>
+
+          {/* Session Lock Button */}
+          {onLockSession && (
+            <button
+              onClick={onLockSession}
+              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 hover:text-amber-400 text-slate-400 transition cursor-pointer"
+              title="Sitzung jetzt sperren (Passkey / PIN)"
+            >
+              <Lock className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </header>
 
@@ -330,13 +344,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
                     <GraduationCap className="w-4 h-4" />
                   </span>
-                  <span className="text-[10px] font-bold uppercase text-blue-400">RUB Klausur</span>
+                  <span className="text-[10px] font-bold uppercase text-blue-400">Klausur & Prüfung</span>
                 </div>
                 <h4 className="text-sm font-bold text-white group-hover:text-blue-200 transition">
                   Prüfungs- & Klausurvorlage
                 </h4>
                 <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  Offizielle Header, Aufgabenboxen, Punktetabellen und Musterlösungen.
+                  Universitäre Vorlage mit Aufgabenboxen, Punktetabellen und Musterlösungen.
                 </p>
               </div>
 

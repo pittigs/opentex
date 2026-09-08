@@ -16,7 +16,8 @@ import {
   GitBranch,
   MessageSquare,
   Bot,
-  ArrowLeft
+  ArrowLeft,
+  Lock
 } from 'lucide-react';
 import type { Collaborator, LaTeXTemplate, GitConfig, UserProfile } from '../../types';
 
@@ -51,6 +52,7 @@ interface NavbarProps {
   onBackToDashboard?: () => void;
   onOpenAccount?: () => void;
   userProfile?: UserProfile;
+  onLockSession?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -81,7 +83,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAiOpen,
   onBackToDashboard,
   onOpenAccount,
-  userProfile
+  userProfile,
+  onLockSession
 }) => {
   return (
     <header className="h-14 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-3 flex items-center justify-between z-30 select-none">
@@ -348,6 +351,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-[10px] text-white shadow">
               {userProfile.avatar || 'MM'}
             </div>
+          </button>
+        )}
+
+        {/* Lock Session Button */}
+        {onLockSession && (
+          <button
+            onClick={onLockSession}
+            className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border border-slate-700/60 transition cursor-pointer"
+            title="Sitzung jetzt sperren (Passkey / PIN)"
+          >
+            <Lock className="w-3.5 h-3.5" />
           </button>
         )}
       </div>

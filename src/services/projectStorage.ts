@@ -8,17 +8,17 @@ const STORAGE_ACTIVE_PROJECT_KEY = 'opentex_active_project_id_v1';
 export const DEFAULT_USER_PROFILE: UserProfile = {
   id: 'usr-1',
   name: 'Maximilian Müller',
-  email: 'max.mueller@rub.de',
+  email: 'max.mueller@opentex.org',
   avatar: 'MM',
   role: 'Wissenschaftlicher Mitarbeiter / PhD Candidate',
-  affiliation: 'Ruhr-Universität Bochum',
+  affiliation: 'Universität / Forschungsinstitut',
   orcid: '0000-0002-8419-3281',
   bio: 'Forschungsschwerpunkte: Verteilte Systeme, CRDTs und wissenschaftliches Publizieren.',
   plan: 'OpenTeX Academic Pro',
   storageUsedMb: 38.4,
   storageLimitMb: 5120, // 5 GB
   gitUsername: 'pittigs',
-  gitEmail: 'max.mueller@rub.de',
+  gitEmail: 'max.mueller@opentex.org',
   gitToken: '',
   aiKeys: {
     openai: '',
@@ -41,7 +41,7 @@ const DEFAULT_COLLABORATORS: Collaborator[] = [
   },
   {
     id: 'collab-2',
-    name: 'Alex Weber (TUM)',
+    name: 'Alex Weber',
     color: '#8b5cf6',
     avatar: 'AW',
     role: 'viewer',
@@ -67,9 +67,9 @@ const INITIAL_PROJECTS: ProjectSummary[] = [
     collaborators: DEFAULT_COLLABORATORS,
   },
   {
-    id: 'proj-rub-exam',
-    name: 'RUB Probability Mock Exam 2026',
-    description: 'Klausurvorlage Fakultät für Informatik / Mathematik (Ruhr-Universität Bochum).',
+    id: 'proj-academic-exam',
+    name: 'Academic Probability Exam 2026',
+    description: 'Universitäre Klausur- und Übungsvorlage mit Aufgabenboxen, Punktetabelle und Deckblatt.',
     category: 'Exam',
     lastModified: 'Vor 2 Stunden',
     updatedAt: Date.now() - 2 * 3600 * 1000,
