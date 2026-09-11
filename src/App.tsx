@@ -49,7 +49,8 @@ import {
   createEmptyProject,
   duplicateProject,
   deleteProject,
-  toggleStarProject
+  toggleStarProject,
+  cleanupDuplicateProjects
 } from './services/projectStorage';
 import { isVaultLocked, setVaultLocked } from './services/passkeyService';
 import JSZip from 'jszip';
@@ -292,6 +293,11 @@ export const App: React.FC = () => {
     const newProj = createProjectFromTemplate(templateId);
     setProjects(loadProjects());
     handleOpenProjectFromDashboard(newProj.id);
+  };
+
+  const handleCleanupDuplicates = () => {
+    const cleaned = cleanupDuplicateProjects();
+    setProjects(cleaned);
   };
 
   const handleCreateEmptyProject = (name: string, description?: string) => {
@@ -612,6 +618,7 @@ export const App: React.FC = () => {
           onDuplicateProject={handleDuplicateProject}
           onDeleteProject={handleDeleteProject}
           onSelectTemplateDirect={handleSelectTemplateDirect}
+          onCleanupDuplicates={handleCleanupDuplicates}
           isDarkMode={isDarkMode}
           toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
           onLockSession={handleLockSession}

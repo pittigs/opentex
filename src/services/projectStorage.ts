@@ -290,3 +290,24 @@ export function toggleStarProject(projectId: string): ProjectSummary[] {
   saveProjects(updated);
   return updated;
 }
+
+/**
+ * Removes duplicate projects with identical names and categories, keeping only the most recent one.
+ */
+export function cleanupDuplicateProjects(): ProjectSummary[] {
+  const projects = loadProjects();
+  const seenNames = new Set<string>();
+  const uniqueProjects: ProjectSummary[] = [];
+
+  for (const p of projects) {
+    const key = `${p.name.trim()}_${p.category}`;
+    if (!seenNames.has(key)) {
+      seenNames.add(key);
+      uniqueProjects.push(p);
+    }
+  }
+
+  saveProjects(uniqueProjects);
+  return uniqueProjects;
+}
+

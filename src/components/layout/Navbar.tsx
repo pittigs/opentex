@@ -145,14 +145,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           className={`flex items-center space-x-2 ${onBackToDashboard ? 'cursor-pointer hover:opacity-90 transition' : ''}`}
           onClick={onBackToDashboard}
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 via-blue-500 to-cyan-400 flex items-center justify-center shadow-md shadow-indigo-500/20">
-            <span className="font-extrabold text-sm text-white tracking-tight">TeX</span>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-400 flex items-center justify-center shadow-md shadow-blue-500/25">
+            <span className="font-black text-sm text-white tracking-tight">AX</span>
           </div>
           <div className="flex flex-col">
             <div className="flex items-center space-x-1.5">
-              <span className="font-bold text-sm tracking-tight text-white">OpenTeX</span>
-              <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                Editor
+              <span className="font-bold text-sm tracking-tight text-white">AxiomTeX</span>
+              <span className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                STUDIO
               </span>
             </div>
           </div>

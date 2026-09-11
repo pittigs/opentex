@@ -70,8 +70,8 @@ export const LockScreen: React.FC<LockScreenProps> = ({
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-black/80 backdrop-blur-xl relative z-10 flex flex-col items-center text-center">
         {/* Brand Logo & Lock Indicator */}
         <div className="relative mb-6">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-400 flex items-center justify-center shadow-xl shadow-indigo-500/20">
-            <span className="font-black text-2xl text-white tracking-tight">TeX</span>
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-400 flex items-center justify-center shadow-xl shadow-blue-500/25">
+            <span className="font-black text-2xl text-white tracking-tight">AX</span>
           </div>
           <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-slate-950 border-2 border-slate-800 flex items-center justify-center text-amber-400 shadow">
             <Lock className="w-4 h-4" />
@@ -79,7 +79,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({
         </div>
 
         {/* Title & User Identification */}
-        <h1 className="text-xl font-black text-white tracking-tight">OpenTeX Tresor gesperrt</h1>
+        <h1 className="text-xl font-black text-white tracking-tight">AxiomTeX Tresor gesperrt</h1>
         <p className="text-xs text-slate-400 mt-1">
           Geschützte wissenschaftliche Dokumentenumgebung
         </p>

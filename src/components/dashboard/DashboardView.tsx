@@ -34,6 +34,7 @@ interface DashboardViewProps {
   onDuplicateProject: (projectId: string) => void;
   onDeleteProject: (projectId: string) => void;
   onSelectTemplateDirect: (templateId: string) => void;
+  onCleanupDuplicates?: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   onLockSession?: () => void;
@@ -51,12 +52,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onDuplicateProject,
   onDeleteProject,
   onSelectTemplateDirect,
+  onCleanupDuplicates,
   onLockSession,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | 'Paper' | 'Exam' | 'Thesis'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [menuOpenProjectId, setMenuOpenProjectId] = useState<string | null>(null);
+
+  // Detect duplicate projects
+  const duplicateCount = useMemo(() => {
+    const names = new Set<string>();
+    let dups = 0;
+    for (const p of projects) {
+      const key = `${p.name.trim()}_${p.category}`;
+      if (names.has(key)) dups++;
+      else names.add(key);
+    }
+    return dups;
+  }, [projects]);
 
   // Filtered and searched projects
   const filteredProjects = useMemo(() => {
@@ -69,7 +84,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       if (!matchesSearch) return false;
 
-      // Category filter
+      // Category template filter
+      if (selectedCategoryFilter !== 'all' && proj.category !== selectedCategoryFilter) {
+        return false;
+      }
+
+      // Sidebar Category filter
       if (selectedFilter === 'all') return !proj.isArchived;
       if (selectedFilter === 'mine') return proj.ownerId === userProfile.id && !proj.isArchived;
       if (selectedFilter === 'shared') return proj.isShared && !proj.isArchived;
@@ -77,7 +97,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       if (selectedFilter === 'archive') return proj.isArchived;
       return true;
     });
-  }, [projects, searchQuery, selectedFilter, userProfile.id]);
+  }, [projects, searchQuery, selectedFilter, selectedCategoryFilter, userProfile.id]);
 
   const handleExportZip = (e: React.MouseEvent, proj: ProjectSummary) => {
     e.stopPropagation();
@@ -107,14 +127,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <header className="h-16 border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <span className="font-black text-sm text-white tracking-tight">TeX</span>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-400 flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <span className="font-black text-sm text-white tracking-tight">AX</span>
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-extrabold text-base tracking-tight text-white">OpenTeX</span>
-                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                  Workspace
+                <span className="font-extrabold text-base tracking-tight text-white">AxiomTeX</span>
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  STUDIO
                 </span>
               </div>
             </div>
@@ -139,7 +159,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="flex items-center space-x-3">
           <button
             onClick={onNewProjectClick}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white shadow-md shadow-indigo-500/20 transition flex items-center space-x-1.5 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20 transition flex items-center space-x-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Neues Projekt</span>
@@ -150,17 +170,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* User Account Trigger Button */}
           <button
             onClick={onOpenAccountClick}
-            className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-850 transition text-left cursor-pointer group"
+            className="flex items-center space-x-2.5 p-1.5 pr-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-850 transition text-left cursor-pointer group"
           >
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-xs text-white shadow">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow">
               {userProfile.avatar || 'MM'}
             </div>
             <div className="hidden sm:block">
               <span className="block text-xs font-semibold text-slate-200 group-hover:text-white transition leading-tight">
                 {userProfile.name}
               </span>
-              <span className="block text-[10px] text-slate-400 leading-tight truncate max-w-[120px]">
-                {userProfile.affiliation || 'Benutzerkonto'}
+              <span className="block text-[10px] text-slate-500 truncate max-w-[120px]">
+                {userProfile.role}
               </span>
             </div>
           </button>
@@ -178,20 +198,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </header>
 
-      {/* Main Workspace Body */}
-      <div className="flex-1 flex max-w-7xl w-full mx-auto px-6 py-8 gap-8">
-        {/* Left Sidebar */}
-        <aside className="w-64 shrink-0 flex flex-col space-y-6 select-none">
-          {/* Main Navigation Filters */}
+      {/* Body Layout: Sidebar + Main Workspace */}
+      <div className="flex-1 flex max-w-7xl w-full mx-auto p-6 gap-6">
+        {/* Left Navigation Sidebar */}
+        <aside className="w-64 shrink-0 flex flex-col space-y-6">
+          {/* Main Navigation Links */}
           <div className="space-y-1">
-            <span className="text-[11px] font-bold uppercase text-slate-400 px-3 tracking-wider">
+            <span className="px-3 text-[11px] font-bold uppercase text-slate-400 tracking-wider">
               Navigation
             </span>
             <button
               onClick={() => setSelectedFilter('all')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer ${
                 selectedFilter === 'all'
-                  ? 'bg-indigo-600/15 text-indigo-300 font-semibold border border-indigo-500/30'
+                  ? 'bg-blue-600/15 text-blue-300 font-semibold border border-blue-500/30'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -199,7 +219,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <Folder className="w-4 h-4" />
                 <span>Alle Dokumente</span>
               </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
                 {projects.filter((p) => !p.isArchived).length}
               </span>
             </button>
@@ -208,7 +228,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => setSelectedFilter('mine')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer ${
                 selectedFilter === 'mine'
-                  ? 'bg-indigo-600/15 text-indigo-300 font-semibold border border-indigo-500/30'
+                  ? 'bg-blue-600/15 text-blue-300 font-semibold border border-blue-500/30'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -222,7 +242,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => setSelectedFilter('shared')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer ${
                 selectedFilter === 'shared'
-                  ? 'bg-indigo-600/15 text-indigo-300 font-semibold border border-indigo-500/30'
+                  ? 'bg-blue-600/15 text-blue-300 font-semibold border border-blue-500/30'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -239,7 +259,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => setSelectedFilter('starred')}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition cursor-pointer ${
                 selectedFilter === 'starred'
-                  ? 'bg-indigo-600/15 text-indigo-300 font-semibold border border-indigo-500/30'
+                  ? 'bg-blue-600/15 text-blue-300 font-semibold border border-blue-500/30'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
               }`}
             >
@@ -261,14 +281,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </span>
               <button
                 onClick={onOpenAccountClick}
-                className="text-[11px] text-indigo-400 hover:text-indigo-300 transition cursor-pointer flex items-center gap-0.5"
+                className="text-[11px] text-blue-400 hover:text-blue-300 transition cursor-pointer flex items-center gap-0.5"
               >
                 Verwalten <ChevronRight className="w-3 h-3" />
               </button>
             </div>
 
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-xs text-white shadow">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow">
                 {userProfile.avatar}
               </div>
               <div className="truncate">
@@ -286,7 +306,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
               <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
                 <div 
-                  className="bg-indigo-500 h-full rounded-full transition-all"
+                  className="bg-blue-500 h-full rounded-full transition-all"
                   style={{ width: `${percentageUsed}%` }}
                 />
               </div>
@@ -301,82 +321,167 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               rel="noreferrer"
               className="flex items-center space-x-1.5 hover:text-white transition"
             >
-              <GitBranch className="w-3.5 h-3.5" />
-              <span>GitHub Repository</span>
+              <GitBranch className="w-4 h-4" />
+              <span>AxiomTeX GitHub</span>
             </a>
-            <span className="text-[10px] font-mono text-slate-400">v1.0.0</span>
+            <span className="text-[10px] text-slate-500 font-mono">v1.2</span>
           </div>
         </aside>
 
         {/* Center Main Content */}
         <main className="flex-1 min-w-0 space-y-6">
-          {/* Quick Start Academic Templates Banner */}
+          {/* Quick Start Academic Templates Banner (Dynamic Category Filter) */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
-                Schnellstart mit Vorlagen
-              </h3>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                  Schnellstart & Kategorien-Filter
+                </h3>
+                <span className="text-[10px] text-slate-500">
+                  (Klicke zum Filtern der Liste)
+                </span>
+              </div>
+              {selectedCategoryFilter !== 'all' && (
+                <button
+                  onClick={() => setSelectedCategoryFilter('all')}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition font-medium"
+                >
+                  Filter aufheben (Alle anzeigen)
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Card 1: IEEE Journal / Paper */}
               <div
-                onClick={() => onSelectTemplateDirect('ieee-journal')}
-                className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-500/20 hover:border-indigo-500/50 transition cursor-pointer group shadow-sm"
+                onClick={() => setSelectedCategoryFilter((prev) => (prev === 'Paper' ? 'all' : 'Paper'))}
+                className={`p-4 rounded-2xl border transition cursor-pointer group shadow-sm flex flex-col justify-between ${
+                  selectedCategoryFilter === 'Paper'
+                    ? 'ring-2 ring-blue-500 bg-blue-950/50 border-blue-500 shadow-blue-500/20'
+                    : 'bg-gradient-to-br from-blue-950/30 via-slate-900 to-slate-900 border-blue-500/20 hover:border-blue-500/50'
+                }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                    <Sparkles className="w-4 h-4" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-indigo-400">IEEEtran</span>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                      <Sparkles className="w-4 h-4" />
+                    </span>
+                    {selectedCategoryFilter === 'Paper' ? (
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-500 text-white animate-pulse">
+                        Aktiv gefiltert
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase text-blue-400">Paper (Filter)</span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-blue-200 transition">
+                    IEEE Journal / Paper
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                    Zweispaltiges Layout mit Formeln, Tabellen und BibTeX für wissenschaftliche Konferenzen.
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold text-white group-hover:text-indigo-200 transition">
-                  IEEE Journal / Paper
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  Zweispaltiges Layout mit Formeln, Tabellen und BibTeX für wissenschaftliche Konferenzen.
-                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTemplateDirect('ieee-journal');
+                  }}
+                  className="mt-3.5 w-full py-1.5 px-3 rounded-xl bg-blue-600/70 hover:bg-blue-600 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition shadow-sm"
+                  title="Erstellt ein neues Projekt aus der IEEE-Vorlage"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Als neues Projekt anlegen</span>
+                </button>
               </div>
 
+              {/* Card 2: Exam */}
               <div
-                onClick={() => onSelectTemplateDirect('exam-mock')}
-                className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 via-slate-900 to-slate-900 border border-blue-500/20 hover:border-blue-500/50 transition cursor-pointer group shadow-sm"
+                onClick={() => setSelectedCategoryFilter((prev) => (prev === 'Exam' ? 'all' : 'Exam'))}
+                className={`p-4 rounded-2xl border transition cursor-pointer group shadow-sm flex flex-col justify-between ${
+                  selectedCategoryFilter === 'Exam'
+                    ? 'ring-2 ring-cyan-500 bg-cyan-950/50 border-cyan-500 shadow-cyan-500/20'
+                    : 'bg-gradient-to-br from-cyan-950/30 via-slate-900 to-slate-900 border-cyan-500/20 hover:border-cyan-500/50'
+                }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                    <GraduationCap className="w-4 h-4" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-blue-400">Klausur & Prüfung</span>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                      <GraduationCap className="w-4 h-4" />
+                    </span>
+                    {selectedCategoryFilter === 'Exam' ? (
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-cyan-500 text-white animate-pulse">
+                        Aktiv gefiltert
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase text-cyan-400">Klausur (Filter)</span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-cyan-200 transition">
+                    Prüfungs- & Klausurvorlage
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                    Universitäre Vorlage mit Aufgabenboxen, Punktetabellen und Musterlösungen.
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold text-white group-hover:text-blue-200 transition">
-                  Prüfungs- & Klausurvorlage
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  Universitäre Vorlage mit Aufgabenboxen, Punktetabellen und Musterlösungen.
-                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTemplateDirect('exam-mock');
+                  }}
+                  className="mt-3.5 w-full py-1.5 px-3 rounded-xl bg-cyan-600/70 hover:bg-cyan-600 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition shadow-sm"
+                  title="Erstellt ein neues Projekt aus der Klausurvorlage"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Als neues Projekt anlegen</span>
+                </button>
               </div>
 
+              {/* Card 3: Thesis */}
               <div
-                onClick={() => onSelectTemplateDirect('thesis-template')}
-                className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/20 hover:border-amber-500/50 transition cursor-pointer group shadow-sm"
+                onClick={() => setSelectedCategoryFilter((prev) => (prev === 'Thesis' ? 'all' : 'Thesis'))}
+                className={`p-4 rounded-2xl border transition cursor-pointer group shadow-sm flex flex-col justify-between ${
+                  selectedCategoryFilter === 'Thesis'
+                    ? 'ring-2 ring-amber-500 bg-amber-950/50 border-amber-500 shadow-amber-500/20'
+                    : 'bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-900 border-amber-500/20 hover:border-amber-500/50'
+                }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                    <BookOpen className="w-4 h-4" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-amber-400">Abschlussarbeit</span>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      <BookOpen className="w-4 h-4" />
+                    </span>
+                    {selectedCategoryFilter === 'Thesis' ? (
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-500 text-white animate-pulse">
+                        Aktiv gefiltert
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase text-amber-400">Thesis (Filter)</span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-amber-200 transition">
+                    Master- & Bachelorarbeit
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                    Komplette Buch-/Kapitelstruktur mit Inhaltsverzeichnis, Abstract und Eidesstattlicher Erklärung.
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold text-white group-hover:text-amber-200 transition">
-                  Master- & Bachelorarbeit
-                </h4>
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                  Komplette Buch-/Kapitelstruktur mit Inhaltsverzeichnis, Abstract und Eidesstattlicher Erklärung.
-                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectTemplateDirect('thesis-template');
+                  }}
+                  className="mt-3.5 w-full py-1.5 px-3 rounded-xl bg-amber-600/70 hover:bg-amber-600 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition shadow-sm"
+                  title="Erstellt ein neues Projekt aus der Thesis-Vorlage"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Als neues Projekt anlegen</span>
+                </button>
               </div>
             </div>
           </div>
 
           {/* Section Header: Filter title & View Switcher */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-800/80">
-            <div>
+            <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-base font-bold text-white flex items-center gap-2">
                 {selectedFilter === 'all' && 'Alle Dokumente'}
                 {selectedFilter === 'mine' && 'Meine Dokumente'}
@@ -386,6 +491,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   ({filteredProjects.length} {filteredProjects.length === 1 ? 'Projekt' : 'Projekte'})
                 </span>
               </h2>
+
+              {selectedCategoryFilter !== 'all' && (
+                <button
+                  onClick={() => setSelectedCategoryFilter('all')}
+                  className="px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 text-xs font-semibold flex items-center gap-1 hover:bg-blue-500/30 transition"
+                  title="Kategorie-Filter aufheben"
+                >
+                  <span>Kategorie: {selectedCategoryFilter}</span>
+                  <span className="text-xs">✕</span>
+                </button>
+              )}
+
+              {duplicateCount > 0 && onCleanupDuplicates && (
+                <button
+                  onClick={onCleanupDuplicates}
+                  className="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center space-x-1.5 transition shadow-sm"
+                  title={`${duplicateCount} Duplikate gefunden. Klicke, um sie aufzuräumen.`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{duplicateCount} Duplikate bereinigen</span>
+                </button>
+              )}
             </div>
 
             <div className="flex items-center space-x-2">
