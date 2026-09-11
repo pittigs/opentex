@@ -150,3 +150,85 @@ export interface ProjectSummary {
   collaborators: Collaborator[];
 }
 
+// Academic Linter & Statistics Types
+export interface LinterIssue {
+  id: string;
+  line: number;
+  column?: number;
+  severity: 'error' | 'warning' | 'info';
+  category: 'citation' | 'style' | 'grammar' | 'latex' | 'readability';
+  message: string;
+  excerpt?: string;
+  fixSuggestion?: {
+    label: string;
+    replacementText: string;
+    targetText: string;
+  };
+}
+
+export interface DocumentStats {
+  wordCount: number;
+  characterCount: number;
+  characterCountNoSpaces: number;
+  paragraphCount: number;
+  sentenceCount: number;
+  equationCount: number;
+  citationCount: number;
+  readingTimeMinutes: number;
+  readabilityScore: number; // Flesch Reading Ease (0 - 100)
+  gradeLevel: string;
+}
+
+// Project Snapshot & Version History Types
+export interface ProjectSnapshot {
+  id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  timestamp: string;
+  createdAt: number;
+  files: ProjectFile[];
+  tags?: string[];
+}
+
+export interface DiffLine {
+  type: 'added' | 'removed' | 'unchanged';
+  text: string;
+  oldLineNumber?: number;
+  newLineNumber?: number;
+}
+
+// Beamer / Presentation Slide Types
+export interface BeamerSlide {
+  id: string;
+  index: number;
+  title: string;
+  subtitle?: string;
+  content: string;
+  bulletPoints: string[];
+  equations: string[];
+  rawLatex: string;
+}
+
+// Cloud Storage & Sync Types
+export type CloudProvider = 'google-drive' | 'nextcloud' | 'local-folder';
+
+export interface CloudStorageConfig {
+  provider: CloudProvider;
+  enabled: boolean;
+  autoSync: boolean;
+  lastSync?: string;
+  // Google Drive
+  googleClientId?: string;
+  googleFolderId?: string;
+  googleFolderName?: string;
+  googleAccessToken?: string;
+  // WebDAV / Nextcloud
+  webdavUrl?: string;
+  webdavUsername?: string;
+  webdavPassword?: string;
+  webdavRemotePath?: string;
+  // Local Folder
+  localFolderHandleName?: string;
+}
+

@@ -25,7 +25,10 @@ import {
   EyeOff,
   Maximize2,
   Minimize2,
-  FileArchive
+  FileArchive,
+  BarChart3,
+  History,
+  Presentation
 } from 'lucide-react';
 import type { Collaborator, LaTeXTemplate, GitConfig, UserProfile } from '../../types';
 
@@ -71,6 +74,11 @@ interface NavbarProps {
   onToggleZenMode?: () => void;
   isDoubleBlind?: boolean;
   onToggleDoubleBlind?: () => void;
+  // Mega Features Phase 2
+  onOpenLinterStats?: () => void;
+  onOpenSnapshots?: () => void;
+  onOpenBeamer?: () => void;
+  onOpenCloudSync?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -92,6 +100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onDownloadPdf,
   isDarkMode,
   toggleDarkMode,
+  currentTemplate: _currentTemplate,
   onOpenGit,
   gitConfig,
   onOpenReview,
@@ -111,7 +120,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   isZenMode,
   onToggleZenMode,
   isDoubleBlind,
-  onToggleDoubleBlind
+  onToggleDoubleBlind,
+  onOpenLinterStats,
+  onOpenSnapshots,
+  onOpenBeamer,
+  onOpenCloudSync
 }) => {
   return (
     <header className="h-14 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-3 flex items-center justify-between z-30 select-none">
@@ -329,6 +342,50 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Literatur & Zitations-Manager (DOI / arXiv / Audit)"
           >
             <BookOpen className="w-4 h-4 text-purple-400" />
+          </button>
+        )}
+
+        {/* Academic Linter & Stats */}
+        {onOpenLinterStats && (
+          <button
+            onClick={onOpenLinterStats}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Text-Analyse & Stilprüfung (Wörter, Lesbarkeit, Linter)"
+          >
+            <BarChart3 className="w-4 h-4 text-amber-400" />
+          </button>
+        )}
+
+        {/* Snapshots & Diff Viewer */}
+        {onOpenSnapshots && (
+          <button
+            onClick={onOpenSnapshots}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Versionsverlauf & Diff-Viewer (Snapshots)"
+          >
+            <History className="w-4 h-4 text-purple-400" />
+          </button>
+        )}
+
+        {/* Beamer Presentation Mode */}
+        {onOpenBeamer && (
+          <button
+            onClick={onOpenBeamer}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Beamer Präsentations-Modus (Folien & Vollbild)"
+          >
+            <Presentation className="w-4 h-4 text-cyan-400" />
+          </button>
+        )}
+
+        {/* Cloud Storage & Sync */}
+        {onOpenCloudSync && (
+          <button
+            onClick={onOpenCloudSync}
+            className="p-1.5 rounded-lg text-xs font-medium bg-slate-800/60 hover:bg-slate-800 text-slate-300 border border-slate-700/60 transition"
+            title="Cloud Sync (Google Drive, Uni Nextcloud, Lokaler Ordner)"
+          >
+            <Cloud className="w-4 h-4 text-blue-400" />
           </button>
         )}
 

@@ -18,6 +18,10 @@ import { TableEditorModal } from './components/modals/TableEditorModal';
 import { PlotGeneratorModal } from './components/modals/PlotGeneratorModal';
 import { CitationModal } from './components/modals/CitationModal';
 import { EncryptionModal } from './components/modals/EncryptionModal';
+import { LinterStatsModal } from './components/modals/LinterStatsModal';
+import { SnapshotModal } from './components/modals/SnapshotModal';
+import { BeamerModal } from './components/modals/BeamerModal';
+import { CloudSyncModal } from './components/modals/CloudSyncModal';
 import { exportArxivPackage } from './services/exportService';
 import type { 
   ProjectFile, 
@@ -104,6 +108,12 @@ export const App: React.FC = () => {
   const [isEncryptionModalOpen, setIsEncryptionModalOpen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isDoubleBlind, setIsDoubleBlind] = useState(false);
+
+  // Mega Features Phase 2
+  const [isLinterStatsOpen, setIsLinterStatsOpen] = useState(false);
+  const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
+  const [isBeamerModalOpen, setIsBeamerModalOpen] = useState(false);
+  const [isCloudSyncModalOpen, setIsCloudSyncModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -682,6 +692,10 @@ export const App: React.FC = () => {
         onToggleZenMode={() => setIsZenMode(!isZenMode)}
         isDoubleBlind={isDoubleBlind}
         onToggleDoubleBlind={() => setIsDoubleBlind(!isDoubleBlind)}
+        onOpenLinterStats={() => setIsLinterStatsOpen(true)}
+        onOpenSnapshots={() => setIsSnapshotModalOpen(true)}
+        onOpenBeamer={() => setIsBeamerModalOpen(true)}
+        onOpenCloudSync={() => setIsCloudSyncModalOpen(true)}
       />
 
       {/* Main Workspace Split Layout */}
@@ -847,6 +861,44 @@ export const App: React.FC = () => {
         commits={commits}
         onCommitAndPush={handleCommitAndPush}
         onPullChanges={handlePullChanges}
+      />
+
+      <LinterStatsModal
+        isOpen={isLinterStatsOpen}
+        onClose={() => setIsLinterStatsOpen(false)}
+        activeTexContent={activeContent}
+        onUpdateContent={(newContent) => handleUpdateContent(newContent)}
+        onJumpToLine={handleJumpToLine}
+      />
+
+      <SnapshotModal
+        isOpen={isSnapshotModalOpen}
+        onClose={() => setIsSnapshotModalOpen(false)}
+        projectId={activeProjectId}
+        currentFiles={files}
+        activeFileId={activeFileId}
+        onRestoreSnapshot={(restoredFiles) => {
+          setFiles(restoredFiles);
+        }}
+      />
+
+      <BeamerModal
+        isOpen={isBeamerModalOpen}
+        onClose={() => setIsBeamerModalOpen(false)}
+        activeTexContent={activeContent}
+      />
+
+      <CloudSyncModal
+        isOpen={isCloudSyncModalOpen}
+        onClose={() => setIsCloudSyncModalOpen(false)}
+        projectName={projectName}
+        files={files}
+        onImportProjectFiles={(importedFiles) => {
+          setFiles(importedFiles);
+          if (importedFiles.length > 0) {
+            setActiveFileId(importedFiles[0].id);
+          }
+        }}
       />
     </div>
   );
